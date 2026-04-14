@@ -51,6 +51,10 @@ services:
         environment:
             TZ: Europe/Moscow
         restart: unless-stopped
+        links:
+            - php
+        depends_on:
+            - php
         extra_hosts:
             - "push-server-sub:172.18.0.10"
             - "push-server-pub:172.18.0.11"
@@ -143,4 +147,4 @@ networks:
     bitrixdock:
         ipam:
             config:
-                - subnet: 172.18.0.0/24
+                -   subnet: 172.18.0.0/24

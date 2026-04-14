@@ -68,6 +68,19 @@ SITE_PATH=./www                  # Путь к директории Вашего
 Ошибки ждём в [issue](https://github.com/bitrixdock/bitrixdock/issues)
 Приятной работы!
 
+## Скачивание дистрибутива
+Для скачивания исходников Битрикс с лицензионным ключом:
+```shell
+./download.sh <редакция> <лицензионный_ключ>
+```
+
+Например:
+```shell
+./download.sh business S12-NA-PMNBEUFJG1JH32C1
+```
+
+Доступные редакции: `business`, `small_business`, `standard`, `start`, `bitrix24`, `bitrix24_enterprise`, `bitrix24_shop`.
+
 ## Запуск и остановка bitrixdock
 ### Запуск
 ```shell
