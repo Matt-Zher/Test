@@ -1,5 +1,6 @@
-FROM --platform=linux/amd64 percona:8.0
+ARG MYSQL_VERSION=8.4
+FROM percona/percona-server:${MYSQL_VERSION}
 
 LABEL org.opencontainers.image.source="https://github.com/bitrixdock/bitrixdock"
 
-COPY my.cnf /etc/mysql/conf.d/my.cnf
+COPY --chown=mysql:root --chmod=0664 my.cnf /etc/my.cnf.d/my.cnf

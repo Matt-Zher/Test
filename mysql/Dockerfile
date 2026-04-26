@@ -1,4 +1,5 @@
-FROM mysql:8.0-debian
+ARG MYSQL_VERSION=8.4
+FROM --platform=linux/amd64 mysql:${MYSQL_VERSION}
 
 LABEL org.opencontainers.image.source="https://github.com/bitrixdock/bitrixdock"
 

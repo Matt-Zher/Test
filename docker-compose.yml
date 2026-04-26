@@ -60,10 +60,12 @@ services:
             - "push-server-pub:172.18.0.11"
 
     db:
-        build: ./${DB_SERVER_TYPE}
-        platform: linux/amd64
+        build:
+            context: ./${DB_SERVER_TYPE:-percona}
+            args:
+                MYSQL_VERSION: ${MYSQL_VERSION:-8.4}
         volumes:
-            - ./${DB_SERVER_TYPE}/init:/docker-entrypoint-initdb.d
+            - ./${DB_SERVER_TYPE:-percona}/init:/docker-entrypoint-initdb.d
             - ./logs/db:/var/log/mysql
             - /etc/localtime:/etc/localtime/:ro
             - db:/var/lib/mysql
