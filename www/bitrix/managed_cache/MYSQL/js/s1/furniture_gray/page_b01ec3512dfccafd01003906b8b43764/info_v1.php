@@ -1,0 +1,1 @@
+<?php $filesInfo = ["/local/components/library/books.list/templates/.default/script.js" => "17838791491225",]; ?>

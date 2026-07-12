@@ -23,23 +23,40 @@ class BookRepository
      * Список книг
      */
     public function getAll(
-        array $filter = [],
+        int $page = 1,
+        int $limit = 10,
+        array $filter = [
+            '=ACTIVE' => 'Y',
+        ],
         array $order = ['ID' => 'ASC']
-    ): EO_ElementBooks_Collection {
-        return $this->entityClass::getList([
-            'select' => [
-                'ID',
-                'NAME',
-                'ACTIVE',
-                'AUTHOR',
-                'YEAR',
-                'DESCRIPTION',
-            ],
-            'filter' => $filter,
-            'order' => $order,
-        ])->fetchCollection();
+    ): Array {
+        $total = $this->entityClass::getCount(
+            $filter
+        );
+        $offset = ($page - 1) * $limit;
+        return [
+            'items' => $this->entityClass::getList([
+                'select' => [
+                    'ID',
+                    'NAME',
+                    'ACTIVE',
+                    'AUTHOR',
+                    'YEAR',
+                    'DESCRIPTION',
+                ],
+                'filter' => $filter,
+                'order' => $order,
+                'limit' => $limit,
+                'offset' => $offset,
+            ])->fetchCollection(),
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'pages' => (int)ceil($total / $limit),
+            ]
+        ];
     }
-
     /**
      * Получить книгу
      */
@@ -61,22 +78,21 @@ class BookRepository
      * Создать книгу
      */
     public function create(array $fields): int
-    {
+    { 
         $book = $this->entityClass::createObject();
-
         $book->setName($fields['NAME']);
         $book->setActive($fields['ACTIVE'] ?? 'Y');
 
         if (isset($fields['AUTHOR'])) {
-            $book->getAuthor()->setValue($fields['AUTHOR']);
+            $book->setAuthor($fields['AUTHOR']);
         }
 
         if (isset($fields['YEAR'])) {
-            $book->getYear()->setValue($fields['YEAR']);
+            $book->setYear($fields['YEAR']);
         }
 
         if (isset($fields['DESCRIPTION'])) {
-            $book->getDescription()->setValue($fields['DESCRIPTION']);
+            $book->setDescription($fields['DESCRIPTION']);
         }
 
         $result = $book->save();

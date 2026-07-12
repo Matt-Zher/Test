@@ -1,3 +1,5 @@
+
+; /* Start:"a:4:{s:4:"full";s:79:"/local/components/library/books.list/templates/.default/script.js?1783284005991";s:6:"source";s:65:"/local/components/library/books.list/templates/.default/script.js";s:3:"min";s:0:"";s:3:"map";s:0:"";}"*/
 document.querySelectorAll('.book-row').forEach(row => {
 
     row.addEventListener('click', function () {
@@ -33,3 +35,5 @@ document.getElementById('cancel-edit').addEventListener('click', function () {
     button.textContent = 'Добавить книгу';
 
 });
+/* End */
+;; /* /local/components/library/books.list/templates/.default/script.js?1783284005991*/

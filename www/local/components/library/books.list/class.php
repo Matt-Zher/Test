@@ -39,18 +39,17 @@ class BooksListComponent extends CBitrixComponent
 
         $validator  = new BookValidator();
         $repository = new BookRepository($iblockId);
-
-        // Обрабатываем POST-запрос (create/update/delete)
-        $this->handleRequest($validator, $repository);
-
-        // Получаем список книг и выводим в шаблон
         $this->loadBooks($repository);
-
+        // Обрабатываем POST-запрос (create/update/delete)
+        $this->handleRequestPost($validator, $repository);
+        $this->handleRequestGet($validator, $repository);
+        // Получаем список книг и выводим в шаблон
+        
         $this->includeComponentTemplate();
     }
 
     /** Обработка POST-запросов */
-    private function handleRequest(BookValidator $validator, BookRepository $repository): void
+    private function handleRequestPost(BookValidator $validator, BookRepository $repository): void
     {
         $request = Application::getInstance()->getContext()->getRequest();
         if (!$request->isPost() || !check_bitrix_sessid()) {
@@ -66,36 +65,92 @@ class BooksListComponent extends CBitrixComponent
             $this->deleteBook($repository, $request);
         }
     }
-
+    private function handleRequestGet(BookValidator $validator, BookRepository $repository): void 
+    {
+        $request = Application::getInstance()->getContext()->getRequest();
+        $action = $request->getQuery("action");
+        if ($action === "filter") {
+            $this->filterBooks($repository, $request);
+        }
+    }
     /** Чтение списка книг */
     private function loadBooks(BookRepository $repository): void
-{
-    $collection = $repository->getAll();
+    {   
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $limit = max(1, (int)($_GET['limit'] ?? 10));
+        $result = $repository->getAll($page, $limit);
+        $books = [];
+        foreach ($result['items'] as $book) {
 
-    $books = [];
+            $books[] = [
 
-    foreach ($collection as $book) {
+                'ID' => $book->getId(),
 
-        $books[] = [
+                'NAME' => $book->getName(),
 
-            'ID' => $book->getId(),
+                'AUTHOR' => $book->getAuthor()?->getValue(),
 
-            'NAME' => $book->getName(),
+                'YEAR' => $book->getYear()?->getValue(),
 
-            'AUTHOR' => $book->getAuthor()?->getValue(),
+                'DESCRIPTION' => $book->getDescription()?->getValue(),
 
-            'YEAR' => $book->getYear()?->getValue(),
+                'ACTIVE' => $book->getActive(),
 
-            'DESCRIPTION' => $book->getDescription()?->getValue(),
+            ];
+        }
 
-            'ACTIVE' => $book->getActive(),
-
+        $this->arResult = [
+            'BOOKS' => $books,
+            'PAGINATION' => $result['pagination'],
         ];
     }
 
-    $this->arResult['BOOKS'] = $books;
-}
+    /** Чтение списка книг (с фильтром) */
+    private function filterBooks(BookRepository $repository, $request): void
+    {   
+        $filterData = [
+            "NAME"   => trim($request->getQuery("NAME")),
+            "AUTHOR" => trim($request->getQuery("AUTHOR")),
+            "YEAR"   => (int)$request->getQuery("YEAR"),
+        ];
+        $filter = [];
+        if ($filterData['NAME'] !== '') {
+            $filter['%NAME'] = $filterData['NAME'];
+        }
+        if ($filterData['AUTHOR'] !== '') {
+            $filter['%AUTHOR.VALUE'] = $filterData['AUTHOR'];
+        }
+        if ($filterData['YEAR'] > 0) {
+            $filter['=YEAR.VALUE'] = $filterData['YEAR'];
+        }
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $limit = max(1, (int)($_GET['limit'] ?? 10));
+        $result = $repository->getAll($page, $limit, $filter);
+        $books = [];
+        foreach ($result['items'] as $book) {
 
+            $books[] = [
+
+                'ID' => $book->getId(),
+
+                'NAME' => $book->getName(),
+
+                'AUTHOR' => $book->getAuthor()?->getValue(),
+
+                'YEAR' => $book->getYear()?->getValue(),
+
+                'DESCRIPTION' => $book->getDescription()?->getValue(),
+
+                'ACTIVE' => $book->getActive(),
+
+            ];
+        }
+
+        $this->arResult = [
+            'BOOKS' => $books,
+            'PAGINATION' => $result['pagination'],
+        ];
+    }
     /** Создание книги */
     private function createBook(BookValidator $validator, BookRepository $repository, $request): void
     {

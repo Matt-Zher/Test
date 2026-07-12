@@ -3,7 +3,10 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) {
     die();
 }
 ?>
-
+<?php
+use Bitrix\Main\Page\Asset;
+Asset::getInstance()->addJs($templateFolder . '/script.js');
+?>
 <!-- Вывод ошибок компонента -->
 <?php if (!empty($arResult["ERROR"])): ?>
     <div class="error"><?=htmlspecialchars($arResult["ERROR"])?></div>
@@ -15,8 +18,34 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) {
 <?php endif; ?>
 
 <!-- Форма создания книги -->
+<form method="get">
+    <h3>Поиск</h3>
+    <div>
+        <label>Название:<br>
+            <input type="text" name="NAME" id="book-name-filter">
+        </label>
+    </div>
+    <div>
+        <label>Автор:<br>
+            <input type="text" name="AUTHOR" id="book-author-filter">
+        </label>
+    </div>
+    <div>
+        <label>Год:<br>
+            <input type="number" name="YEAR" id="book-year-filter">
+        </label>
+    </div>
+    <button type="submit" id="filter-btn" name="action" value="filter">
+        Найти
+    </button>
+<button type="button" id="cancel-filter">
+    Отмена
+</button>
+</form>
+
 <form method="post">
     <?=bitrix_sessid_post()?>
+    <h3>Создание/Обновление</h3>
     <input type="hidden" name="ID" id="book-id" value="">
     <div>
         <label>Название:<br>
@@ -44,19 +73,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) {
 <button type="button" id="cancel-edit">
     Отмена
 </button>
-<script>
-    document.getElementById('cancel-edit').addEventListener('click', function () {
-    document.querySelector('form').reset();
-    document.getElementById('book-id').value = '';
-    var button = document.getElementById('submit-btn');
-    document.getElementById('book-id').value = '';
-    document.getElementById('book-name').value = '';
-    document.getElementById('book-author').value = '';
-    document.getElementById('book-year').value = '';
-    document.getElementById('book-description').value = '';
-    button.value = 'create';
-    button.textContent = 'Добавить книгу';});
-</script>
 </form>
 
 <!-- Таблица со списком книг -->
@@ -87,26 +103,53 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) {
             </td>
         </tr>
     <?php endforeach; ?>
-    <script>
-        document.querySelectorAll('.book-row').forEach(function(row) {
+    </table>
+    <?php if ($arResult['PAGINATION']['pages'] > 1): ?>
 
-            row.addEventListener('click', function () {
+    <div class="pagination">
 
-            document.getElementById('book-id').value = this.dataset.id;
+        <?php if ($arResult['PAGINATION']['page'] > 1): ?>
 
-            document.getElementById('book-name').value = this.dataset.name;
+            <a href="<?= $APPLICATION->GetCurPageParam(
+                'page=' . ($arResult['PAGINATION']['page'] - 1),
+                ['page']
+            ) ?>">
+                ← Назад
+            </a>
 
-            document.getElementById('book-author').value = this.dataset.author;
+        <?php endif; ?>
 
-            document.getElementById('book-year').value = this.dataset.year;
+        <?php for ($i = 1; $i <= $arResult['PAGINATION']['pages']; $i++): ?>
 
-            document.getElementById('book-description').value = this.dataset.description;
+            <?php if ($i == $arResult['PAGINATION']['page']): ?>
 
-            var button = document.getElementById('submit-btn');
+                <strong><?= $i ?></strong>
 
-            button.value = 'update';
-            button.textContent = 'Сохранить изменения';
-        });
-        });
-</script>
-</table>
+            <?php else: ?>
+
+                <a href="<?= $APPLICATION->GetCurPageParam(
+                    'page=' . $i,
+                    ['page']
+                ) ?>">
+                    <?= $i ?>
+                </a>
+
+            <?php endif; ?>
+
+        <?php endfor; ?>
+
+        <?php if ($arResult['PAGINATION']['page'] < $arResult['PAGINATION']['pages']): ?>
+
+            <a href="<?= $APPLICATION->GetCurPageParam(
+                'page=' . ($arResult['PAGINATION']['page'] + 1),
+                ['page']
+            ) ?>">
+                Вперед →
+            </a>
+
+        <?php endif; ?>
+
+    </div>
+
+<?php endif; ?>
+
